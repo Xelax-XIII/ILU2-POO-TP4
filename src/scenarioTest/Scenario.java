@@ -1,17 +1,57 @@
 package scenarioTest;
 
 import personnages.Gaulois;
-import produits.Poisson;
-import produits.Sanglier;
+import produit.Poisson;
+import produit.Sanglier;
 import villagegaulois.Etal;
+import villagegaulois.IEtal;
+import villagegaulois.IVillage;
 
 public class Scenario {
 
 	public static void main(String[] args) {
 
-		// TODO Partie 4 : creer de la classe anonyme Village
+		IVillage village = new IVillage() {
+			private IEtal[] marche = new IEtal[3];
+			private int nbEtalsOccupes = 0;
 
-		// fin
+			@Override
+			public <P extends produit.Produit> boolean installerVendeur(Etal<P> etal, Gaulois vendeur, P[] produit,
+					int prix) {
+				if (nbEtalsOccupes < marche.length) {
+					etal.installerVendeur(vendeur, produit, prix);
+					marche[nbEtalsOccupes] = etal;
+					nbEtalsOccupes++;
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			public void acheterProduit(String produit, int quantiteSouhaitee) {
+				int quantiteRestante = quantiteSouhaitee;
+				for (int i = 0; i < nbEtalsOccupes && quantiteRestante > 0; i++) {
+					int quantiteDisponible = marche[i].contientProduit(produit, quantiteRestante);
+					if (quantiteDisponible > 0) {
+						int prixPaye = marche[i].acheterProduit(quantiteDisponible);
+						System.out.println("A l'étal n° " + (i + 1) + ", j'achète " + quantiteDisponible + " " + produit
+								+ "s et je paye " + prixPaye + " sous.");
+						quantiteRestante -= quantiteDisponible;
+					}
+				}
+				System.out.println("Je voulais " + quantiteSouhaitee + " " + produit + "s, j'en ai acheté "
+						+ (quantiteSouhaitee - quantiteRestante) + ".");
+			}
+
+			@Override
+			public String toString() {
+				StringBuilder resultat = new StringBuilder();
+				for (int i = 0; i < nbEtalsOccupes; i++) {
+					resultat.append(marche[i].etatEtal());
+				}
+				return resultat.toString();
+			}
+		};
 
 		Gaulois ordralfabetix = new Gaulois("Ordralfabétix", 9);
 		Gaulois obelix = new Gaulois("Obélix", 20);
@@ -44,4 +84,3 @@ public class Scenario {
 	}
 
 }
-
